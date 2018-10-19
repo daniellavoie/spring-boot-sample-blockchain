@@ -16,15 +16,17 @@ jobs:
 - name: validate-pull-request
   plan:
   - get: src-pr
+    trigger: true
   - task: build
-    file: sr-pr/ci/tasks/maven-package/maven-package.yml
+    file: src-pr/ci/tasks/maven-package/maven-package.yml
     input_mapping:
       src: src-pr
       ci: src-pr
   - task: push-to-cf
-    file: sr-pr/ci/tasks/push-to-cf/push-to-cf.yml
+    file: src-pr/ci/tasks/push-to-cf/push-to-cf.yml
     input_mapping:
-      ci: src-pr
+      src-ci: src-pr
+      
     params:
       APP_NAME: blockchain-stats
       APP_HOSTNAME: blockchain-stats
