@@ -1,0 +1,35 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: daniellavoie/pwgen-cfcli
+    tag: alpine
+
+inputs:
+- name: build
+- name: src-ci
+
+outputs:
+- name: cf-space
+
+run:
+  path: src-ci/ci/tasks/push/push.sh
+
+params:
+  APP_NAME:
+  APP_HOSTNAME:
+  APP_DOMAIN:
+  DB_NAME:
+  DB_SERVICE_NAME:
+  DB_SERVICE_PLAN:
+  BUILDPACK:
+  CF_API:
+  CF_USER:
+  CF_PASSWORD:
+  CF_ORG:
+  CF_SPACE:
+  CF_SPACE_PREFIX:
+  
+  
