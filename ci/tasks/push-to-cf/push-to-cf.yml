@@ -9,11 +9,12 @@ image_resource:
 
 inputs:
 - name: build
+- name: config
 - name: src-ci
 
 outputs:
 - name: cf-space
-- name: backend-url
+- name: app-url
 
 run:
   path: src-ci/ci/tasks/push-to-cf/push-to-cf.sh
@@ -33,6 +34,5 @@ params:
   CF_SPACE:
   CF_SPACE_PREFIX:
   CF_PATH:
-  CF_MANIFEST:
   
   

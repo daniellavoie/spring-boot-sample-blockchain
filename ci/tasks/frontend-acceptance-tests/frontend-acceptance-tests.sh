@@ -3,7 +3,7 @@
 set -x 
 
 SRC=src
-FRONTEND_URL=$(cat backend-url/backend-url)
+FRONTEND_URL=$(cat app-url/app-url)
 
 if [ -z "$PROFILE" ]; then
   PROFILE=default

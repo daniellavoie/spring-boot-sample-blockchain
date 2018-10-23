@@ -8,8 +8,8 @@ image_resource:
     tag: 8-jdk-slim
 
 inputs:
-- name: ci
 - name: src
+- name: src-ci
 
 outputs:
 - name: artifact-id
@@ -17,7 +17,7 @@ outputs:
 
 
 run:
-  path: ci/ci/tasks/maven-package/maven-package.sh
+  path: src-ci/ci/tasks/maven-package/maven-package.sh
   
 params:
   TARGET_PATH:

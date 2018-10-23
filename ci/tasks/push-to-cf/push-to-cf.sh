@@ -2,6 +2,7 @@
 
 set -x	
 
+CONFIG_FOLDER=config
 CF_SPACE_FILE=cf-space/cf-space
 
 if [ -z "$CF_SPACE" ]; then
@@ -21,10 +22,12 @@ cleanSpace() {
 }
 
 exportHost() {
-  ROUTES_URL=$(cf curl "/v2/apps" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:${APP_NAME}" | jq -r '.resources[0].entity.routes_url')
+  SPACE_GUID=$(cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:${CF_SPACE}" | jq -r '.resources[0].metadata.guid')
+  ROUTES_URL=$(cf curl "/v2/apps" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:${APP_NAME}&q=space_guid:${SPACE_GUID}" | jq -r '.resources[0].entity.routes_url')
+  
   HOST=$(cf curl $ROUTES_URL -X GET -H "Content-Type: application/x-www-form-urlencoded" | jq -r '.resources[0].entity.host')
   
-  echo "https://$HOST.$APP_DOMAIN" > backend-url/backend-url
+  echo "https://$HOST.$APP_DOMAIN" > app-url/app-url
 }
 
 loginAndTargetSpace() {
@@ -38,7 +41,7 @@ loginAndTargetSpace() {
 }
 
 pushApplication() {
-  PARAMS="--no-start -p $CF_PATH $APP_NAME -d $APP_DOMAIN -b $BUILDPACK -f $CF_MANIFEST"
+  PARAMS="--no-start -p $CF_PATH $APP_NAME -d $APP_DOMAIN -b $BUILDPACK -f $CONFIG_FOLDER/manifest.yml"
 
   if [ ! -z "$APP_HOSTNAME" ]; then
     PARAMS="$PARAMS -n $APP_HOSTNAME"

@@ -4,7 +4,7 @@ set -x
 
 SRC=src
 SRC_CI=src-ci
-BACKEND_URL=$(cat backend-url/backend-url)
+BACKEND_URL=$(cat app-url/app-url)
 
 if [ -z "$PROFILE" ]; then
   PROFILE=default

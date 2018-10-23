@@ -10,7 +10,7 @@ image_resource:
 inputs:
 - name: src
 - name: src-ci
-- name: backend-url
+- name: app-url
 
 run:
   path: src-ci/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.sh
