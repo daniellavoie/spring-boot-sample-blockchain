@@ -8,16 +8,12 @@ image_resource:
     tag: 8-jdk-slim
 
 inputs:
-- name: ci
 - name: src
-
-outputs:
-- name: artifact-id
-- name: build
-
+- name: src-ci
+- name: backend-url
 
 run:
-  path: ci/ci/tasks/maven-package/maven-package.sh
+  path: src-ci/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.sh
   
 params:
-  TARGET_PATH:
+  PROFILE: 

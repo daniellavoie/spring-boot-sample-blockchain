@@ -2,7 +2,6 @@
 
 set -x	
 
-PATH=path
 CF_SPACE_FILE=cf-space/cf-space
 
 if [ -z "$CF_SPACE" ]; then
@@ -21,11 +20,14 @@ cleanSpace() {
   cf delete -f $APP_NAME
 }
 
-createService() {
-  #cf create-service $DB_SERVICE_NAME $DB_SERVICE_PLAN $DB_NAME
+exportHost() {
+  ROUTES_URL=$(cf curl "/v2/apps" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:${APP_NAME}" | jq -r '.resources[0].entity.routes_url')
+  HOST=$(cf curl $ROUTES_URL -X GET -H "Content-Type: application/x-www-form-urlencoded" | jq -r '.resources[0].entity.host')
+  
+  echo "https://$HOST.$APP_DOMAIN" > backend-url/backend-url
 }
 
-loginAndTargetSpace(){
+loginAndTargetSpace() {
   cf api $CF_API --skip-ssl-validation && \
   cf auth $CF_USER $CF_PASSWORD
   
@@ -36,7 +38,7 @@ loginAndTargetSpace(){
 }
 
 pushApplication() {
-  PARAMS="--no-start -p $PATH $APP_NAME -d $APP_DOMAIN -b $BUILDPACK"
+  PARAMS="--no-start -p $CF_PATH $APP_NAME -d $APP_DOMAIN -b $BUILDPACK -f $CF_MANIFEST"
 
   if [ ! -z "$APP_HOSTNAME" ]; then
     PARAMS="$PARAMS -n $APP_HOSTNAME"
@@ -62,7 +64,6 @@ loginAndTargetSpace
 cleanSpace
 
 # TODO - Check for errors
-createService
-
-# TODO - Check for errors
 pushApplication
+
+exportHost

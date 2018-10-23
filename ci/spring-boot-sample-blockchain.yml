@@ -12,22 +12,38 @@ resources:
     repo: {{github-repository}}
     access_token: {{github-access_token}}
 
+- name: src-master
+  type: git
+  source:
+    uri: {{git-master-uri}}
+    branch: master
+    
+- name: artifacts
+  type: s3
+  source:
+    bucket: spring-boot-sample-blockchain
+    versioned_file: spring-boot-sample-blockchain-backend.jar
+    access_key_id: {{s3-access-key}}
+    secret_access_key: {{s3-access-secret}}
+
 jobs:
 - name: validate-pull-request
   plan:
   - get: src-pr
+    trigger: true
   - task: build
-    file: sr-pr/ci/tasks/maven-package/maven-package.yml
+    file: src-pr/ci/tasks/maven-package/maven-package.yml
     input_mapping:
       src: src-pr
       ci: src-pr
+    params:
+      TARGET_PATH: src/backend/target/*
   - task: push-to-cf
-    file: sr-pr/ci/tasks/push-to-cf/push-to-cf.yml
+    file: src-pr/ci/tasks/push-to-cf/push-to-cf.yml
     input_mapping:
-      ci: src-pr
+      src-ci: src-pr
     params:
       APP_NAME: blockchain-stats
-      APP_HOSTNAME: blockchain-stats
       APP_DOMAIN: {{app-domain}}
       BUILDPACK: java_buildpack
       CF_API: {{cf-api}}
@@ -35,3 +51,97 @@ jobs:
       CF_PASSWORD: {{cf-password}}
       CF_ORG: {{cf-org}}
       CF_SPACE_PREFIX: ((cf-space-prefix))
+      CF_PATH: build/*.jar
+      CF_MANIFEST: src-ci/ci/tasks/push-to-cf/manifests/pr/manifest.yml
+  - task: backend-acceptance-tests
+    file: src-pr/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.yml
+    input_mapping:
+      src: src-pr
+      src-ci: src-pr
+    params:
+      PROFILE: pr 
+  - task: frontend-acceptance-tests
+    file: src-pr/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
+    input_mapping:
+      src: src-pr
+      src-ci: src-pr  
+    params:
+      PROFILE: pr
+      
+- name: build-master
+  plan:
+  - get: src-master
+    trigger: true
+  - task: build
+    file: src-master/ci/tasks/maven-package/maven-package.yml
+    input_mapping:
+      src: src-master
+      ci: src-master
+    params:
+      TARGET_PATH: src/backend/target/*
+  - put: artifacts
+    params:
+      file: build/*.jar
+
+- name: deploy-staging
+  plan:
+  - get: artifacts
+    trigger: true
+    passed: ["build-master"]
+  - task: push-to-cf
+    file: src-pr/ci/tasks/push-to-cf/push-to-cf.yml
+    input_mapping:
+      src-ci: src-pr
+    params:
+      APP_NAME: blockchain-stats
+      APP_HOSTNAME: staging-blockchain-stats
+      APP_DOMAIN: {{app-domain}}
+      BUILDPACK: java_buildpack
+      CF_API: {{cf-api}}
+      CF_USER: {{cf-user}}
+      CF_PASSWORD: {{cf-password}}
+      CF_ORG: {{cf-org}}
+      CF_PATH: artifact/*.jar
+      CF_MANIFEST: src-pr/ci/tasks/push-to-cf/manifests/staging/manifest.yml
+
+- name: acceptance-tests-staging
+  plan:
+  - get: artifacts
+    trigger: true
+    passed: ["deploy-staging"]
+  - task: backend-acceptance-tests
+    file: src-master/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.yml
+    input_mapping:
+      src: src-master
+      src-ci: src-master
+    params:
+      PROFILE: staging
+  - task: frontend-acceptance-tests
+    file: src-master/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
+    input_mapping:
+      src: src-master
+      src-ci: src-master  
+    params:
+      PROFILE: staging
+
+- name: deploy-production
+  plan:
+  - get: artifacts
+    passed: ["acceptance-tests-staging"]
+  - task: push-to-cf
+    file: src-pr/ci/tasks/push-to-cf/push-to-cf.yml
+    input_mapping:
+      src-ci: src-pr
+    params:
+      APP_NAME: blockchain-stats
+      APP_HOSTNAME: staging-blockchain-stats
+      APP_DOMAIN: {{app-domain}}
+      BUILDPACK: java_buildpack
+      CF_API: {{cf-api}}
+      CF_USER: {{cf-user}}
+      CF_PASSWORD: {{cf-password}}
+      CF_ORG: {{cf-org}}
+      CF_PATH: artifact/*.jar
+      CF_MANIFEST: src-pr/ci/tasks/push-to-cf/manifests/staging/manifest.yml
+
+- name: smoke-tests-production

@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 SRC=src
-CI=ci
 BUILD=build
 
 cd $SRC && \
   ./mvnw -B package && \
   cd .. && \
-  cp -a $SRC/* $BUILD
+  cp -a $TARGET_PATH $BUILD
