@@ -1,3 +1,13 @@
+# Spring Boot Blockchain Sample
+
+## Technologies
+
+* Blockchain - Ethereum (Web3j)
+* Backend - Spring Boot
+* GUI - Angular 6
+* Pull Request Model - Github
+* CI CD - Concourse CI
+* PaaS - Cloud Foundry
 
 ## Concourse deployment
 

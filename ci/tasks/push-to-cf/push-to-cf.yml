@@ -4,7 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: daniellavoie/pwgen-cfcli
+    repository: daniellavoie/cf-cli
     tag: alpine
 
 inputs:
@@ -13,9 +13,10 @@ inputs:
 
 outputs:
 - name: cf-space
+- name: backend-url
 
 run:
-  path: src-ci/ci/tasks/push/push.sh
+  path: src-ci/ci/tasks/push-to-cf/push-to-cf.sh
 
 params:
   APP_NAME:
@@ -31,5 +32,7 @@ params:
   CF_ORG:
   CF_SPACE:
   CF_SPACE_PREFIX:
+  CF_PATH:
+  CF_MANIFEST:
   
   
