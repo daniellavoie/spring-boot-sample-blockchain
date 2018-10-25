@@ -1,5 +1,9 @@
 # Spring Boot Blockchain Sample
 
+## High Level Overview
+
+![High Level Overview](doc/images/high-level-overview.png "High Level Overview")
+
 ## Technologies
 
 * Blockchain - Ethereum (Web3j)
@@ -10,6 +14,10 @@
 * PaaS - Cloud Foundry
 
 ## Concourse deployment
+
+### The pipeline
+
+![Deployment Pipeline](doc/images/deployment-pipeline.png "Deployment Pipeline")
 
 ### Login to the concourse server
 
