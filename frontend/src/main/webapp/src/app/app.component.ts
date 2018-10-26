@@ -1,5 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { GasPriceService } from './gas-price-service/gas-price.service';
+
+import { chart } from 'highcharts';
+import * as Highcharts from 'highcharts';
+
+import { tap, mapTo, mergeAll, switchMap } from 'rxjs/operators';
+import { from } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -7,15 +13,49 @@ import { GasPriceService } from './gas-price-service/gas-price.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  gasPrice: number = 0;
+  @ViewChild("gasPriceChart") chartTarget: ElementRef;
 
-  constructor(private gasPriceService: GasPriceService) {
-    this.refreshGasPrice();
-  }
+  chart: Highcharts.ChartObject;
+
+  constructor(private gasPriceService: GasPriceService) { }
 
   public refreshGasPrice() {
-    this.gasPriceService.getGasPrice()
+    const source = this.gasPriceService.getGasPrices();
 
-      .subscribe(gasPrice => this.gasPrice = gasPrice);
+    source.pipe(
+      switchMap(gasPrices => from(gasPrices.content)),
+      mapTo(gasPrice => [gasPrice.timestamp, gasPrice.price]),
+      mergeAll(),
+      tap<any[]>(data => this.updateGasPriceChart(data)))
+
+      .subscribe();
+  }
+
+  updateGasPriceChart(data: any[]) {
+    const options: Highcharts.Options = {
+      xAxis: {
+        type: 'datetime'
+      },
+      yAxis: {
+        title: {
+          text: 'WEI'
+        }
+      },
+      legend: {
+        enabled: false
+      },
+
+      series: [{
+        type: 'area',
+        name: 'Gas price',
+        data: data
+      }]
+    };
+
+    this.chart = chart(this.chartTarget.nativeElement, options);
+  }
+
+  ngAfterViewInit() {
+    this.refreshGasPrice();
   }
 }

@@ -118,6 +118,7 @@ jobs:
   - get: config-staging
     trigger: true
   - get: src-master
+    passed: ["build-master"]
   - get: artifacts
     trigger: true
     passed: ["build-master"]
@@ -131,6 +132,9 @@ jobs:
       APP_NAME: blockchain-stats
       APP_HOSTNAME: staging-blockchain-stats
       APP_DOMAIN: {{app-domain}}
+      DB_NAME: blockchain-db
+      DB_SERVICE_NAME: cleardb
+      DB_SERVICE_PLAN: freespark
       BUILDPACK: java_buildpack
       CF_API: {{cf-api}}
       CF_USER: {{cf-user}}
@@ -145,6 +149,7 @@ jobs:
 - name: acceptance-tests-staging
   plan:
   - get: src-master
+    passed: ["deploy-staging"]
   - get: artifacts
     passed: ["deploy-staging"]
   - get: app-url
@@ -171,6 +176,7 @@ jobs:
   - get: config-production
     trigger: true
   - get: src-master
+    passed: ["acceptance-tests-staging"]
   - get: artifacts
     passed: ["acceptance-tests-staging"]
   - task: push-to-cf
@@ -183,6 +189,9 @@ jobs:
       APP_NAME: blockchain-stats
       APP_HOSTNAME: production-blockchain-stats
       APP_DOMAIN: {{app-domain}}
+      DB_NAME: blockchain-db
+      DB_SERVICE_NAME: cleardb
+      DB_SERVICE_PLAN: freespark
       BUILDPACK: java_buildpack
       CF_API: {{cf-api}}
       CF_USER: {{cf-user}}
@@ -197,6 +206,7 @@ jobs:
 - name: smoke-tests-production
   plan:
   - get: src-master
+    passed: ["deploy-production"]
   - get: artifacts
     passed: ["deploy-production"]
   - get: app-url

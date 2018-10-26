@@ -17,7 +17,17 @@ fi
 
 echo "$CF_SPACE" > CF_SPACE_FILE
 
+createService() {
+  if [ ! -z "$DB_NAME" ]; then
+    cf create-service $DB_NAME $DB_SERVICE_NAME $DB_SERVICE_PLAN
+  fi
+}
+
 cleanSpace() {
+  if [ ! -z "$DB_NAME" ]; then
+    cf delete-service $DB_NAME
+  fi
+  
   cf delete -f $APP_NAME
 }
 
@@ -65,6 +75,8 @@ loginAndTargetSpace
 
 # TODO - Check for errors
 cleanSpace
+
+createService
 
 # TODO - Check for errors
 pushApplication
