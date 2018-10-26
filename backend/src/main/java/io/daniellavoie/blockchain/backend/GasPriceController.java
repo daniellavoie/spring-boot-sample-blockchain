@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.protocol.Web3j;
 
 @RestController
-@RequestMapping("/gas-price")
+@RequestMapping("/api/gas-price")
 public class GasPriceController {
 	private Web3j web3j;
 

@@ -16,6 +16,6 @@ public class GasPriceTests {
 
 	@Test
 	public void canRetreiveGasPrice() {
-		Assert.assertNotNull(Integer.valueOf(restTemplate.getForEntity("/gas-price", String.class).getBody()));
+		Assert.assertNotNull(Integer.valueOf(restTemplate.getForEntity("/api/gas-price", String.class).getBody()));
 	}
 }
