@@ -1,0 +1,14 @@
+version : '2'
+
+services:
+  db:
+    image: tutum/mysql
+    container_name: blockchain-mysql
+    environment:
+      - MYSQL_USER=blockchain
+      - MYSQL_PASS=blockchain
+      - ON_CREATE_DB=`blockchain`
+    ports:
+      - 3306:3306
+    networks:
+      - default

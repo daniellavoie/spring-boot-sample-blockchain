@@ -1,0 +1,1 @@
+create table gas_price (id bigint not null auto_increment, price bigint not null, timestamp datetime, primary key (id));
