@@ -1,0 +1,1 @@
+create table ethereum_transaction (id varchar(255) not null, block_number bigint not null, receiver varchar(255), sender varchar(255), value bigint not null, primary key (id));
