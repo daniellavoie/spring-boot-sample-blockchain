@@ -10,7 +10,7 @@ export class GasPriceService {
 
   }
 
-  getGasPrice(): Observable<number> {
+  getGasPrices(): Observable<any> {
     return this.httpClient.get<number>(this.GAS_PRICE_URL);
   }
 }

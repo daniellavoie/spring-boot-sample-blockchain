@@ -25,13 +25,5 @@ describe(frontendConfig.url, () => {
         expect(title).toEqual("Ethereum Blockchain Browser");
       });
     });
-
-    describe("Gas Price", () => {
-      it("loads", async () => {
-        const gasPrice = await page.$eval('.gas-price', el => el.innerText)
-
-        expect(gasPrice).not.toEqual("0");
-      });
-    });
   });
 });
