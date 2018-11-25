@@ -40,10 +40,17 @@ resources:
   type: s3
   source:
     bucket: spring-boot-sample-blockchain-artifacts
-    versioned_file: spring-boot-sample-blockchain-backend.jar
+    versioned_file: spring-boot-sample-blockchain.jar
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-access-secret}}
     region_name: {{s3-region-name}}
+
+- name: docker-image-spring-boot-sample-blockchain
+  type: docker-image
+  source:
+    username: {{blockchain-registry-username}}
+    password: {{blockchain-registry-password}}
+    repository: registry.blockchain.cf-demo.com/daniellavoie/spring-boot-sample-blockchain
     
 - name: app-url
   type: s3
@@ -82,21 +89,13 @@ jobs:
       CF_ORG: {{cf-pr-org}}
       CF_SPACE_PREFIX: ((cf-pr-space-prefix))
       CF_PATH: build/*.jar
-  - aggregate: 
-    - task: backend-acceptance-tests
-      file: src-pr/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.yml
-      input_mapping:
-        src: src-pr
-        src-ci: src-pr
-      params:
-        PROFILE: pr 
-    - task: frontend-acceptance-tests
-      file: src-pr/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
-      input_mapping:
-        src: src-pr
-        src-ci: src-pr  
-      params:
-        PROFILE: pr
+  - task: frontend-acceptance-tests
+    file: src-pr/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
+    input_mapping:
+      src: src-pr
+      src-ci: src-pr  
+    params:
+      PROFILE: pr
       
 - name: build-master
   plan:
@@ -109,11 +108,15 @@ jobs:
       src-ci: src-master
     params:
       TARGET_PATH: src/backend/target/*
+      DOCKERFILE: src/Dockerfile
   - put: artifacts
     params:
       file: build/*.jar
+  - put: docker-image-spring-boot-sample-blockchain
+    params:
+      build: build
 
-- name: deploy-staging
+- name: deploy-cf-staging
   plan:
   - get: config-staging
     trigger: true
@@ -147,39 +150,31 @@ jobs:
     params:
       file: app-url/app-url
         
-- name: acceptance-tests-staging
+- name: acceptance-tests-cf-staging
   plan:
   - get: src-master
-    passed: ["deploy-staging"]
+    passed: ["deploy-cf-staging"]
   - get: artifacts
-    passed: ["deploy-staging"]
+    passed: ["deploy-cf-staging"]
   - get: app-url
-    passed: ["deploy-staging"]
+    passed: ["deploy-cf-staging"]
     trigger: true
-  - aggregate: 
-    - task: backend-acceptance-tests
-      file: src-master/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.yml
-      input_mapping:
-        src: src-master
-        src-ci: src-master
-      params:
-        PROFILE: staging
-    - task: frontend-acceptance-tests
-      file: src-master/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
-      input_mapping:
-        src: src-master
-        src-ci: src-master  
-      params:
-        PROFILE: staging
+  - task: frontend-acceptance-tests
+    file: src-master/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
+    input_mapping:
+      src: src-master
+      src-ci: src-master  
+    params:
+      PROFILE: staging
 
-- name: deploy-production
+- name: deploy-cf-production
   plan:
   - get: config-production
     trigger: true
   - get: src-master
-    passed: ["acceptance-tests-staging"]
+    passed: ["acceptance-tests-cf-staging"]
   - get: artifacts
-    passed: ["acceptance-tests-staging"]
+    passed: ["acceptance-tests-cf-staging"]
   - task: push-to-cf
     file: src-master/ci/tasks/push-to-cf/push-to-cf.yml
     input_mapping:
@@ -203,28 +198,3 @@ jobs:
   - put: app-url
     params:
       file: app-url/app-url
-
-- name: smoke-tests-production
-  plan:
-  - get: src-master
-    passed: ["deploy-production"]
-  - get: artifacts
-    passed: ["deploy-production"]
-  - get: app-url
-    passed: ["deploy-production"]
-    trigger: true
-  - aggregate: 
-    - task: backend-acceptance-tests
-      file: src-master/ci/tasks/backend-acceptance-tests/backend-acceptance-tests.yml
-      input_mapping:
-        src: src-master
-        src-ci: src-master
-      params:
-        PROFILE: staging
-    - task: frontend-acceptance-tests
-      file: src-master/ci/tasks/frontend-acceptance-tests/frontend-acceptance-tests.yml
-      input_mapping:
-        src: src-master
-        src-ci: src-master  
-      params:
-        PROFILE: staging

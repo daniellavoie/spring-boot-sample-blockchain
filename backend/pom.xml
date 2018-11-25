@@ -12,6 +12,7 @@
 	<packaging>jar</packaging>
 
 	<build>
+		<finalName>spring-boot-sample-blockchain</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
