@@ -2,4 +2,4 @@
 env:
   ETHEREUM_NODE_URL: http://147.178.194.77:8558
   SPRING_PROFILES_ACTIVE: mysql
-  TOTO: hello-udq
+  TOTO: hello-toto
